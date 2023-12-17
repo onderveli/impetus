@@ -1,25 +1,44 @@
+(function (global, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define(['exports', 'module'], factory);
+    } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
+        factory(exports, module);
+    } else {
+        var mod = {
+            exports: {}
+        };
+        factory(mod.exports, mod);
+        global.Impetus = mod.exports;
+    }
+})(this, function (exports, module) {
+    'use strict';
 
-const stopThresholdDefault = 0.3;
-const bounceDeceleration = 0.04;
-const bounceAcceleration = 0.11;
+    function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
+    var stopThresholdDefault = 0.3;
+    var bounceDeceleration = 0.04;
+    var bounceAcceleration = 0.11;
 
-// fixes weird safari 10 bug where preventDefault is prevented
-// @see https://github.com/metafizzy/flickity/issues/457#issuecomment-254501356
-window.addEventListener('touchmove', function() {});
+    // fixes weird safari 10 bug where preventDefault is prevented
+    // @see https://github.com/metafizzy/flickity/issues/457#issuecomment-254501356
+    window.addEventListener('touchmove', function () {});
 
+    var Impetus = function Impetus(_ref) {
+        var _ref$source = _ref.source;
+        var sourceEl = _ref$source === undefined ? document : _ref$source;
+        var updateCallback = _ref.update;
+        var _ref$multiplier = _ref.multiplier;
+        var multiplier = _ref$multiplier === undefined ? 1 : _ref$multiplier;
+        var _ref$friction = _ref.friction;
+        var friction = _ref$friction === undefined ? 0.92 : _ref$friction;
+        var initialValues = _ref.initialValues;
+        var boundX = _ref.boundX;
+        var boundY = _ref.boundY;
+        var _ref$bounce = _ref.bounce;
+        var bounce = _ref$bounce === undefined ? true : _ref$bounce;
 
-export default class Impetus {
-    constructor({
-        source: sourceEl = document,
-        update: updateCallback,
-        multiplier = 1,
-        friction = 0.92,
-        initialValues,
-        boundX,
-        boundY,
-        bounce = true
-    }) {
+        _classCallCheck(this, Impetus);
+
         var boundXmin, boundXmax, boundYmin, boundYmax, pointerLastX, pointerLastY, pointerCurrentX, pointerCurrentY, pointerId, decVelX, decVelY;
         var targetX = 0;
         var targetY = 0;
@@ -30,12 +49,11 @@ export default class Impetus {
         var decelerating = false;
         var trackingPoints = [];
 
-
         /**
          * Initialize instance
          */
         (function init() {
-            sourceEl = (typeof sourceEl === 'string') ? document.querySelector(sourceEl) : sourceEl;
+            sourceEl = typeof sourceEl === 'string' ? document.querySelector(sourceEl) : sourceEl;
             if (!sourceEl) {
                 throw new Error('IMPETUS: source not found.');
             }
@@ -73,7 +91,7 @@ export default class Impetus {
          * reinstanciate Impetus on the same sourceEl
          * this will remove the previous event listeners
          */
-        this.destroy = function() {
+        this.destroy = function () {
             sourceEl.removeEventListener('touchstart', onDown);
             sourceEl.removeEventListener('mousedown', onDown);
 
@@ -90,7 +108,7 @@ export default class Impetus {
          * Disable movement processing
          * @public
          */
-        this.pause = function() {
+        this.pause = function () {
             cleanUpRuntimeEvents();
 
             pointerActive = false;
@@ -101,7 +119,7 @@ export default class Impetus {
          * Enable movement processing
          * @public
          */
-        this.resume = function() {
+        this.resume = function () {
             paused = false;
         };
 
@@ -111,7 +129,7 @@ export default class Impetus {
          * @param {Number} x
          * @param {Number} y
          */
-        this.setValues = function(x, y) {
+        this.setValues = function (x, y) {
             if (typeof x === 'number') {
                 targetX = x;
             }
@@ -121,11 +139,30 @@ export default class Impetus {
         };
 
         /**
+         * Update the current x and y values
+         * @public
+         * @param {Number} x
+         * @param {Number} y
+         */
+         this.getValueX = function () {
+            return targetX;
+        };
+        /**
+         * Update the current x and y values
+         * @public
+         * @param {Number} x
+         * @param {Number} y
+         */
+         this.getValueY = function () {
+            return targetY;
+        };
+
+        /**
          * Update the multiplier value
          * @public
          * @param {Number} val
          */
-        this.setMultiplier = function(val) {
+        this.setMultiplier = function (val) {
             multiplier = val;
             stopThreshold = stopThresholdDefault * multiplier;
         };
@@ -135,7 +172,7 @@ export default class Impetus {
          * @public
          * @param {Number[]} boundX
          */
-        this.setBoundX = function(boundX) {
+        this.setBoundX = function (boundX) {
             boundXmin = boundX[0];
             boundXmax = boundX[1];
         };
@@ -145,7 +182,7 @@ export default class Impetus {
          * @public
          * @param {Number[]} boundY
          */
-        this.setBoundY = function(boundY) {
+        this.setBoundY = function (boundY) {
             boundYmin = boundY[0];
             boundYmax = boundY[1];
         };
@@ -154,26 +191,26 @@ export default class Impetus {
          * Removes all events set by this instance during runtime
          */
         function cleanUpRuntimeEvents() {
-          // Remove all touch events added during 'onDown' as well.
-          document.removeEventListener('touchmove', onMove, getPassiveSupported() ? { passive: false } : false);
-          document.removeEventListener('touchend', onUp);
-          document.removeEventListener('touchcancel', stopTracking);
-          document.removeEventListener('mousemove', onMove, getPassiveSupported() ? { passive: false } : false);
-          document.removeEventListener('mouseup', onUp);
+            // Remove all touch events added during 'onDown' as well.
+            document.removeEventListener('touchmove', onMove, getPassiveSupported() ? { passive: false } : false);
+            document.removeEventListener('touchend', onUp);
+            document.removeEventListener('touchcancel', stopTracking);
+            document.removeEventListener('mousemove', onMove, getPassiveSupported() ? { passive: false } : false);
+            document.removeEventListener('mouseup', onUp);
         }
 
         /**
          * Add all required runtime events
          */
         function addRuntimeEvents() {
-          cleanUpRuntimeEvents();
+            cleanUpRuntimeEvents();
 
-          // @see https://developers.google.com/web/updates/2017/01/scrolling-intervention
-          document.addEventListener('touchmove', onMove, getPassiveSupported() ? { passive: false } : false);
-          document.addEventListener('touchend', onUp);
-          document.addEventListener('touchcancel', stopTracking);
-          document.addEventListener('mousemove', onMove, getPassiveSupported() ? { passive: false } : false);
-          document.addEventListener('mouseup', onUp);
+            // @see https://developers.google.com/web/updates/2017/01/scrolling-intervention
+            document.addEventListener('touchmove', onMove, getPassiveSupported() ? { passive: false } : false);
+            document.addEventListener('touchend', onUp);
+            document.addEventListener('touchcancel', stopTracking);
+            document.addEventListener('mousemove', onMove, getPassiveSupported() ? { passive: false } : false);
+            document.addEventListener('mouseup', onUp);
         }
 
         /**
@@ -196,7 +233,8 @@ export default class Impetus {
                     y: touch.clientY,
                     id: touch.identifier
                 };
-            } else { // mouse events
+            } else {
+                // mouse events
                 return {
                     x: ev.clientX,
                     y: ev.clientY,
@@ -278,7 +316,7 @@ export default class Impetus {
                 trackingPoints.shift();
             }
 
-            trackingPoints.push({x, y, time});
+            trackingPoints.push({ x: x, y: y, time: time });
         }
 
         /**
@@ -292,7 +330,7 @@ export default class Impetus {
             targetY += pointerChangeY * multiplier;
 
             if (bounce) {
-                let diff = checkBounds();
+                var diff = checkBounds();
                 if (diff.x !== 0) {
                     targetX -= pointerChangeX * dragOutOfBoundsMultiplier(diff.x) * multiplier;
                 }
@@ -310,7 +348,6 @@ export default class Impetus {
             ticking = false;
         }
 
-
         /**
          * Returns a value from around 0.5 to 1, based on distance
          * @param {Number} val
@@ -318,7 +355,6 @@ export default class Impetus {
         function dragOutOfBoundsMultiplier(val) {
             return 0.000005 * Math.pow(val, 2) + 0.0001 * val + 0.55;
         }
-
 
         /**
          * prevents animating faster than current framerate
@@ -329,7 +365,6 @@ export default class Impetus {
             }
             ticking = true;
         }
-
 
         /**
          * Determine position relative to bounds
@@ -353,10 +388,10 @@ export default class Impetus {
 
             if (restrict) {
                 if (xDiff !== 0) {
-                    targetX = (xDiff > 0) ? boundXmin : boundXmax;
+                    targetX = xDiff > 0 ? boundXmin : boundXmax;
                 }
                 if (yDiff !== 0) {
-                    targetY = (yDiff > 0) ? boundYmin : boundYmax;
+                    targetY = yDiff > 0 ? boundYmin : boundYmax;
                 }
             }
 
@@ -366,7 +401,6 @@ export default class Impetus {
                 inBounds: xDiff === 0 && yDiff === 0
             };
         }
-
 
         /**
          * Initialize animation of values coming to a stop
@@ -379,19 +413,18 @@ export default class Impetus {
             var yOffset = lastPoint.y - firstPoint.y;
             var timeOffset = lastPoint.time - firstPoint.time;
 
-            var D = (timeOffset / 15) / multiplier;
+            var D = timeOffset / 15 / multiplier;
 
-            decVelX = (xOffset / D) || 0; // prevent NaN
-            decVelY = (yOffset / D) || 0;
+            decVelX = xOffset / D || 0; // prevent NaN
+            decVelY = yOffset / D || 0;
 
             var diff = checkBounds();
 
-            if ((Math.abs(decVelX) > 1 || Math.abs(decVelY) > 1) || !diff.inBounds){
+            if (Math.abs(decVelX) > 1 || Math.abs(decVelY) > 1 || !diff.inBounds) {
                 decelerating = true;
                 requestAnimFrame(stepDecelAnim);
             }
         }
-
 
         /**
          * Animates values slowing down
@@ -409,16 +442,16 @@ export default class Impetus {
 
             var diff = checkBounds();
 
-            if ((Math.abs(decVelX) > stopThreshold || Math.abs(decVelY) > stopThreshold) || !diff.inBounds) {
+            if (Math.abs(decVelX) > stopThreshold || Math.abs(decVelY) > stopThreshold || !diff.inBounds) {
 
                 if (bounce) {
-                    let reboundAdjust = 2.5;
+                    var reboundAdjust = 2.5;
 
                     if (diff.x !== 0) {
                         if (diff.x * decVelX <= 0) {
                             decVelX += diff.x * bounceDeceleration;
                         } else {
-                            let adjust = (diff.x > 0) ? reboundAdjust : -reboundAdjust;
+                            var adjust = diff.x > 0 ? reboundAdjust : -reboundAdjust;
                             decVelX = (diff.x + adjust) * bounceAcceleration;
                         }
                     }
@@ -426,7 +459,7 @@ export default class Impetus {
                         if (diff.y * decVelY <= 0) {
                             decVelY += diff.y * bounceDeceleration;
                         } else {
-                            let adjust = (diff.y > 0) ? reboundAdjust : -reboundAdjust;
+                            var adjust = diff.y > 0 ? reboundAdjust : -reboundAdjust;
                             decVelY = (diff.y + adjust) * bounceAcceleration;
                         }
                     }
@@ -457,33 +490,35 @@ export default class Impetus {
             }
         }
     }
-}
 
+    /**
+     * @see http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
+     */
+    ;
 
+    module.exports = Impetus;
+    var requestAnimFrame = (function () {
+        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+    })();
 
-/**
- * @see http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/
- */
-const requestAnimFrame = (function(){
-    return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(callback) {
-        window.setTimeout(callback, 1000 / 60);
-    };
-})();
+    function getPassiveSupported() {
+        var passiveSupported = false;
 
+        try {
+            var options = Object.defineProperty({}, "passive", {
+                get: function get() {
+                    passiveSupported = true;
+                }
+            });
 
-function getPassiveSupported() {
-    let passiveSupported = false;
+            window.addEventListener("test", null, options);
+        } catch (err) {}
 
-    try {
-        var options = Object.defineProperty({}, "passive", {
-            get: function() {
-                passiveSupported = true;
-            }
-        });
-
-        window.addEventListener("test", null, options);
-    } catch(err) {}
-
-    getPassiveSupported = () => passiveSupported;
-    return passiveSupported;
-}
+        getPassiveSupported = function () {
+            return passiveSupported;
+        };
+        return passiveSupported;
+    }
+});

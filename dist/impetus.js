@@ -139,6 +139,25 @@
         };
 
         /**
+         * Update the current x and y values
+         * @public
+         * @param {Number} x
+         * @param {Number} y
+         */
+         this.getValueX = function () {
+            return targetX;
+        };
+        /**
+         * Update the current x and y values
+         * @public
+         * @param {Number} x
+         * @param {Number} y
+         */
+         this.getValueY = function () {
+            return targetY;
+        };
+
+        /**
          * Update the multiplier value
          * @public
          * @param {Number} val
